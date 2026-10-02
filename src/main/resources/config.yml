@@ -1,0 +1,17 @@
+world-name: ""
+
+scan:
+  radius-blocks: 128
+  checks-per-tick: 300
+  minimum-height-difference: 20
+  cross-section-width: 5
+  minimum-supporting-columns: 3
+  supporting-column-height: 18
+  plateau-depth: 3
+  plateau-width: 3
+  lower-plateau-tolerance: 6
+  upper-plateau-tolerance: 8
+  maximum-elevator-height: 160
+
+generation:
+  startup-delay-ticks: 60
