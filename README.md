@@ -1,1 +1,81 @@
-# Eaglervators-Fall-26
+# Eaglervators — Fall 2026
+
+A Paper 1.21.11 classroom plugin that automatically finds the nearest **real 20+ block cliff** around world spawn and builds **one** protected glass-and-soul-sand elevator as a proof of concept.
+
+## What it does
+
+On first startup, Eaglervators searches outward from spawn in nearest-first order. A location is eligible only when:
+
+- two adjacent terrain columns on the X or Z axis differ by at least 20 blocks in Y;
+- a five-column cross-section confirms that the height change continues across the cliff face;
+- the lower approach is reasonably level;
+- the upper destination is reasonably level;
+- the proposed elevator is not absurdly tall; and
+- the downhill jump-pool area is safe enough to carve into the lower terrain.
+
+This prevents one tree, tower, odd overhang, or isolated terrain spike from becoming an elevator site.
+
+## Generated structure
+
+The plugin creates exactly one structure:
+
+- a 3x3 glass elevator shaft;
+- a source-water column over soul sand for vanilla upward bubble lift;
+- a warped-door entrance at the bottom;
+- a warped-door exit at the top;
+- an unbreakable top landing that bridges into the detected upper terrain;
+- a protected downhill jump edge; and
+- a **3 x 2 x 3 water pool** at the bottom for players who want to jump back down.
+
+The shaft, landing, pool, and fall corridor are protected from block breaking/placing, buckets, explosions, and piston movement.
+
+The generated site is saved to `plugins/Eaglervators/elevator-state.yml`, so restarting the server does **not** create another elevator.
+
+## Build
+
+This project targets the same classroom runtime as the Eaglercraft server:
+
+- Paper 1.21.11
+- Java 21
+- Maven
+
+Build locally:
+
+```bash
+mvn clean package
+```
+
+Output:
+
+```text
+target/Eaglervators-1.0.0.jar
+```
+
+GitHub Actions also builds every push to `main` and stores the latest classroom-ready copy at:
+
+```text
+dist/Eaglervators-1.0.0.jar
+```
+
+## Classroom server plugin-picker entry
+
+When you are ready to expose this project in the classroom session picker, add this line to `classroom/plugins.conf` in the server repo:
+
+```text
+eaglervators|Eaglervators|SMalone16/Eaglervators-Fall-26|main|dist/Eaglervators-1.0.0.jar|0|Eaglervators-
+```
+
+## Admin commands
+
+```text
+/eaglervator status
+/eaglervator scan
+```
+
+`scan` only starts when no Eaglervator currently exists. This is deliberately a one-elevator proof of concept.
+
+## Detector tuning
+
+See `src/main/resources/config.yml`.
+
+The default search radius is 128 blocks. The detector starts from the required 20-block adjacent-column difference, then validates the surrounding cliff width plus upper/lower plateaus before building.
