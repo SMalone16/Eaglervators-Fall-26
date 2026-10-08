@@ -53,8 +53,8 @@ public final class UndercityElevator implements Listener {
 
     public boolean isBuilt() {
         return world.getPersistentDataContainer().getOrDefault(LIFT, PersistentDataType.INTEGER, 0) == 1
-                && at(0, y, -13).getType() == Material.SOUL_SAND
-                && at(3, y, -13).getType() == Material.MAGMA_BLOCK;
+                && at(0, y, -13).getType() == Material.MAGMA_BLOCK
+                && at(3, y, -13).getType() == Material.SOUL_SAND;
     }
 
     private Block at(int dx, int yy, int dz) { return world.getBlockAt(x + dx, yy, z + dz); }
@@ -113,8 +113,8 @@ public final class UndercityElevator implements Listener {
         set(1, y + 1, -11, Material.SEA_LANTERN);
         set(1, top + 1, -11, Material.SEA_LANTERN);
         // Vanilla bubble columns are triggered by placing the bases last.
-        set(0, y, -13, Material.SOUL_SAND);
-        set(3, y, -13, Material.MAGMA_BLOCK);
+        set(0, y, -13, Material.MAGMA_BLOCK); // centered downward exit faces the temple door
+        set(3, y, -13, Material.SOUL_SAND);
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             at(0, y, -13).getState().update(true, true);
             at(3, y, -13).getState().update(true, true);
