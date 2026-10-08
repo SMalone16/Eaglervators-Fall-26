@@ -19,6 +19,7 @@ import java.util.UUID;
 public final class EaglervatorsPlugin extends JavaPlugin {
     private TerrainScanner scanner;
     private ElevatorStructure structure;
+    private UndercityElevator cityLift;
     private File stateFile;
 
     @Override
@@ -56,13 +57,43 @@ public final class EaglervatorsPlugin extends JavaPlugin {
                     getServer().getPluginManager().registerEvents(structure, this);
                     getLogger().info("Restored protection for the existing Eaglervator at "
                             + saved.shaftX() + ", " + saved.bottomY() + ", " + saved.shaftZ() + ".");
+                    if (!wantsCityLift()) return;
+                    startCityLiftPoll();
                     return;
                 }
                 getLogger().warning("Saved Eaglervator state exists, but the structure anchor is missing. Scanning again.");
             }
         }
 
-        startScan(null);
+        if (wantsCityLift()) startCityLiftPoll();
+        else startScan(null);
+    }
+
+    private boolean wantsCityLift() {
+        return getConfig().getBoolean("undercity.prefer-city", true)
+                && getServer().getPluginManager().isPluginEnabled("EaglerCity")
+                && getServer().getPluginManager().isPluginEnabled("EaglerZombiesFall26");
+    }
+
+    private void startCityLiftPoll() {
+        new org.bukkit.scheduler.BukkitRunnable() {
+            int checks;
+            @Override public void run() {
+                World world = selectWorld();
+                UndercityElevator discovered = world == null ? null : UndercityElevator.discover(EaglervatorsPlugin.this, world);
+                if (discovered != null) {
+                    cityLift = discovered;
+                    if (!cityLift.isBuilt()) cityLift.build();
+                    getServer().getPluginManager().registerEvents(cityLift, EaglervatorsPlugin.this);
+                    getLogger().info("City elevator online at " + cityLift.location());
+                    cancel();
+                } else if (++checks >= 30) {
+                    getLogger().warning("City Undercity was not ready; retaining standalone Eaglervator behavior.");
+                    if (structure == null) startScan(null);
+                    cancel();
+                }
+            }
+        }.runTaskTimer(this, 1L, 40L);
     }
 
     private void startScan(CommandSender requester) {
@@ -192,6 +223,7 @@ public final class EaglervatorsPlugin extends JavaPlugin {
         }
 
         if (sub.equals("status")) {
+            if (cityLift != null) sender.sendMessage("Undercity elevator: " + cityLift.location() + " (facing temple)");
             if (structure != null) {
                 ElevatorSite site = structure.site();
                 sender.sendMessage("Eaglervator: ACTIVE at "
