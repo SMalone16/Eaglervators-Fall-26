@@ -15,3 +15,5 @@ permissions:
   eaglervators.admin:
     description: Allows Eaglervators status and scan commands
     default: op
+
+softdepend: [EaglerCity, EaglerZombiesFall26]
