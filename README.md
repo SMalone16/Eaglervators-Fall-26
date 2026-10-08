@@ -79,3 +79,6 @@ eaglervators|Eaglervators|SMalone16/Eaglervators-Fall-26|main|dist/Eaglervators-
 See `src/main/resources/config.yml`.
 
 The default search radius is 128 blocks. The detector starts from the required 20-block adjacent-column difference, then validates the surrounding cliff width plus upper/lower plateaus before building.
+
+## Optional Undercity city lift
+When EaglerCity and EaglerZombiesFall26 are both enabled, the plugin waits for the published world PDC Undercity location and builds a **two-column protected water/bubble elevator**. The soul-sand shaft rises into the city and the magma shaft descends into the cavern; the lower exit faces south toward the temple entrance. The structure is persisted with `eaglervators:undercity_lift` and is reconstructed only if its anchors disappear. Existing cliff lifts remain intact. With either dependency disabled, ordinary nearest-cliff scanning works unchanged. If the City does not publish a cavern within the startup grace window, cliff scanning resumes. The bubbles depend on the running server's water physics and should be verified with the legacy 1.12.2 browser client.
