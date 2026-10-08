@@ -15,3 +15,8 @@ scan:
 
 generation:
   startup-delay-ticks: 60
+
+# With City + Zombies, prefer a protected city/Undercity up/down lift.
+# Without either plugin, existing cliff discovery continues to work.
+undercity:
+  prefer-city: true
