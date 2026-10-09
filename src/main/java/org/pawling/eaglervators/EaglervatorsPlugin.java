@@ -20,6 +20,7 @@ public final class EaglervatorsPlugin extends JavaPlugin {
     private TerrainScanner scanner;
     private ElevatorStructure structure;
     private UndercityElevator cityLift;
+    private org.bukkit.scheduler.BukkitTask cityWaterMonitor;
     private File stateFile;
 
     @Override
@@ -36,13 +37,17 @@ public final class EaglervatorsPlugin extends JavaPlugin {
         long delay = Math.max(1L, getConfig().getLong("generation.startup-delay-ticks", 60L));
         getServer().getScheduler().runTaskLater(this, this::initialize, delay);
 
-        getLogger().info("Eaglervators enabled. Proof-of-concept mode allows exactly one generated elevator.");
+        getLogger().info("Eaglervators " + getDescription().getVersion()
+                + " enabled. Proof-of-concept mode allows exactly one generated elevator.");
     }
 
     @Override
     public void onDisable() {
         if (scanner != null) {
             scanner.cancel();
+        }
+        if (cityWaterMonitor != null) {
+            cityWaterMonitor.cancel();
         }
     }
 
@@ -87,7 +92,12 @@ public final class EaglervatorsPlugin extends JavaPlugin {
                     if (!cityLift.isBuilt()) cityLift.build();
                     else cityLift.repairWaterColumns();
                     getServer().getPluginManager().registerEvents(cityLift, EaglervatorsPlugin.this);
-                    getLogger().info("City elevator online at " + cityLift.location());
+                    // Fluid updates (including other plugins' edits) can occur after
+                    // generation. Recheck ~5 seconds; healthy shafts are read-only.
+                    cityWaterMonitor = getServer().getScheduler().runTaskTimer(
+                            EaglervatorsPlugin.this, cityLift::repairWaterColumns, 60L, 100L);
+                    getLogger().info("City elevator online at " + cityLift.location()
+                            + "; " + cityLift.waterStatus());
                     cancel();
                 } else if (++checks >= 30) {
                     getLogger().warning("City Undercity was not ready; retaining standalone Eaglervator behavior.");
@@ -225,7 +235,11 @@ public final class EaglervatorsPlugin extends JavaPlugin {
         }
 
         if (sub.equals("status")) {
-            if (cityLift != null) sender.sendMessage("Undercity elevator: " + cityLift.location() + " (facing temple)");
+            if (cityLift != null) {
+                sender.sendMessage("Undercity elevator: " + cityLift.location()
+                        + " (facing temple), plugin v" + getDescription().getVersion());
+                sender.sendMessage("Water: " + cityLift.waterStatus());
+            }
             if (structure != null) {
                 ElevatorSite site = structure.site();
                 sender.sendMessage("Eaglervator: ACTIVE at "
