@@ -54,6 +54,7 @@ public final class EaglervatorsPlugin extends JavaPlugin {
                 ElevatorStructure loaded = new ElevatorStructure(this, saved);
                 if (loaded.anchorLooksIntact()) {
                     structure = loaded;
+                    structure.repairWaterColumn();
                     getServer().getPluginManager().registerEvents(structure, this);
                     getLogger().info("Restored protection for the existing Eaglervator at "
                             + saved.shaftX() + ", " + saved.bottomY() + ", " + saved.shaftZ() + ".");
@@ -84,6 +85,7 @@ public final class EaglervatorsPlugin extends JavaPlugin {
                 if (discovered != null) {
                     cityLift = discovered;
                     if (!cityLift.isBuilt()) cityLift.build();
+                    else cityLift.repairWaterColumns();
                     getServer().getPluginManager().registerEvents(cityLift, EaglervatorsPlugin.this);
                     getLogger().info("City elevator online at " + cityLift.location());
                     cancel();
