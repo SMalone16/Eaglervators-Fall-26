@@ -49,14 +49,15 @@ public final class ElevatorStructure implements Listener {
         buildTopLanding();
         buildPool();
 
-        // Soul sand goes in last so the already-created source-water column
-        // receives a vanilla block update and becomes an upward bubble column.
-        setLocal(0, 0, site.bottomY(), Material.SOUL_SAND, true);
+        repairWaterColumn();
+    }
 
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            Block soulSand = world.getBlockAt(site.shaftX(), site.bottomY(), site.shaftZ());
-            soulSand.getState().update(true, true);
-        }, 2L);
+    /** Repairs an existing saved elevator without regenerating its terrain or landing. */
+    public void repairWaterColumn() {
+        if (BubbleColumnWater.ensure(world, site.shaftX(), site.shaftZ(),
+                site.bottomY(), site.topY() + 1, Material.SOUL_SAND)) {
+            plugin.getLogger().info("Filled and activated every source-water cell in the cliff elevator.");
+        }
     }
 
     public boolean anchorLooksIntact() {
@@ -190,7 +191,7 @@ public final class ElevatorStructure implements Listener {
         }
 
         for (int y = bottom + 1; y <= top + 1; y++) {
-            setLocal(0, 0, y, Material.WATER, false);
+            setLocal(0, 0, y, Material.AIR, false);
         }
         setLocal(0, 0, top + 2, Material.AIR, false);
 
