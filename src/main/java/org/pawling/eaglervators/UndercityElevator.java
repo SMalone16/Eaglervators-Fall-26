@@ -57,6 +57,15 @@ public final class UndercityElevator implements Listener {
                 && at(3, y, -13).getType() == Material.SOUL_SAND;
     }
 
+    /** Also fixes existing elevators whose bases survived but water remained flowing. */
+    public void repairWaterColumns() {
+        boolean down = BubbleColumnWater.ensure(world, x, z - 13, y, top + 1, Material.MAGMA_BLOCK);
+        boolean up = BubbleColumnWater.ensure(world, x + 3, z - 13, y, top + 1, Material.SOUL_SAND);
+        if (down || up) {
+            plugin.getLogger().info("Repaired Undercity water: full source blocks and correctly directed bubbles.");
+        }
+    }
+
     private Block at(int dx, int yy, int dz) { return world.getBlockAt(x + dx, yy, z + dz); }
     private void set(int dx, int yy, int dz, Material type) { at(dx, yy, dz).setType(type, false); }
 
@@ -69,7 +78,7 @@ public final class UndercityElevator implements Listener {
                     boolean shaft = (dx == 0 || dx == 3) && dz == -13;
                     if (shaft) {
                         if (h == y) set(dx, h, dz, Material.STONE_BRICKS);
-                        else if (h <= top + 1) set(dx, h, dz, Material.WATER);
+                        else if (h <= top + 1) set(dx, h, dz, Material.AIR);
                         else set(dx, h, dz, Material.GLASS);
                     } else if (dx == -1 || dx == 4 || dz == -14 || dz == -12) {
                         set(dx, h, dz, Material.GLASS);
@@ -112,13 +121,9 @@ public final class UndercityElevator implements Listener {
                 set(dx, top + 3, dz, Material.GLASS);
         set(1, y + 1, -11, Material.SEA_LANTERN);
         set(1, top + 1, -11, Material.SEA_LANTERN);
-        // Vanilla bubble columns are triggered by placing the bases last.
-        set(0, y, -13, Material.MAGMA_BLOCK); // centered downward exit faces the temple door
-        set(3, y, -13, Material.SOUL_SAND);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            at(0, y, -13).getState().update(true, true);
-            at(3, y, -13).getState().update(true, true);
-        }, 2L);
+        // Fill every shaft block with still source water, then activate bubbles.
+        // Magma drags down toward the temple, soul sand carries players up.
+        repairWaterColumns();
         world.getPersistentDataContainer().set(LIFT, PersistentDataType.INTEGER, 1);
         plugin.getLogger().info("Undercity double lift at " + x + "," + y + "," + (z - 13)
                 + " facing SOUTH to the pyramid.");
