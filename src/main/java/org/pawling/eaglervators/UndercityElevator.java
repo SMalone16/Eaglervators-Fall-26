@@ -57,13 +57,53 @@ public final class UndercityElevator implements Listener {
                 && at(3, y, -13).getType() == Material.SOUL_SAND;
     }
 
-    /** Also fixes existing elevators whose bases survived but water remained flowing. */
+    /**
+     * Repairs both preexisting and freshly built shafts without rebuilding the city.
+     * The top station floor is at 'top', so bubbles must end at top, leaving
+     * two clear blocks (top+1 and top+2) to reach the doorway.
+     */
     public void repairWaterColumns() {
-        boolean down = BubbleColumnWater.ensure(world, x, z - 13, y, top + 1, Material.MAGMA_BLOCK);
-        boolean up = BubbleColumnWater.ensure(world, x + 3, z - 13, y, top + 1, Material.SOUL_SAND);
-        if (down || up) {
-            plugin.getLogger().info("Repaired Undercity water: full source blocks and correctly directed bubbles.");
+        boolean exitFixed = repairTopExits();
+        boolean down = BubbleColumnWater.ensure(world, x, z - 13, y, top, Material.MAGMA_BLOCK);
+        boolean up = BubbleColumnWater.ensure(world, x + 3, z - 13, y, top, Material.SOUL_SAND);
+        if (exitFixed || down || up) {
+            plugin.getLogger().info("Undercity lift corrected; " + waterStatus());
         }
+    }
+
+    private boolean repairTopExits() {
+        boolean repaired = false;
+        for (int dx : new int[] {0, 3}) {
+            // An old glass ceiling at top+2 blocked the player's head.
+            // Remove old top+1 water too, so the exit is two blocks high.
+            for (int h = top + 1; h <= top + 2; h++) {
+                if (at(dx, h, -13).getType() != Material.AIR) {
+                    set(dx, h, -13, Material.AIR);
+                    repaired = true;
+                }
+            }
+            // The top+3 glass roof already exists in newly generated lifts.
+            if (at(dx, top + 3, -13).getType() != Material.GLASS) {
+                set(dx, top + 3, -13, Material.GLASS);
+                repaired = true;
+            }
+        }
+        return repaired;
+    }
+
+    public String waterStatus() {
+        return "DOWN: " + BubbleColumnWater.inspect(world, x, z - 13, y, top, Material.MAGMA_BLOCK).summary()
+                + " | UP: " + BubbleColumnWater.inspect(world, x + 3, z - 13, y, top, Material.SOUL_SAND).summary()
+                + " | top exit air: " + exitsClear();
+    }
+
+    private boolean exitsClear() {
+        for (int dx : new int[] {0, 3}) {
+            for (int h = top + 1; h <= top + 2; h++) {
+                if (at(dx, h, -13).getType() != Material.AIR) return false;
+            }
+        }
+        return true;
     }
 
     private Block at(int dx, int yy, int dz) { return world.getBlockAt(x + dx, yy, z + dz); }
@@ -77,9 +117,8 @@ public final class UndercityElevator implements Listener {
                 for (int dz = -14; dz <= -12; dz++) {
                     boolean shaft = (dx == 0 || dx == 3) && dz == -13;
                     if (shaft) {
-                        if (h == y) set(dx, h, dz, Material.STONE_BRICKS);
-                        else if (h <= top + 1) set(dx, h, dz, Material.AIR);
-                        else set(dx, h, dz, Material.GLASS);
+                        // Keep top+1 and top+2 clear; roof will be at top+3.
+                        set(dx, h, dz, h == y ? Material.STONE_BRICKS : Material.AIR);
                     } else if (dx == -1 || dx == 4 || dz == -14 || dz == -12) {
                         set(dx, h, dz, Material.GLASS);
                     } else {
@@ -121,8 +160,8 @@ public final class UndercityElevator implements Listener {
                 set(dx, top + 3, dz, Material.GLASS);
         set(1, y + 1, -11, Material.SEA_LANTERN);
         set(1, top + 1, -11, Material.SEA_LANTERN);
-        // Fill every shaft block with still source water, then activate bubbles.
-        // Magma drags down toward the temple, soul sand carries players up.
+        // Water terminates at the upper floor (top), not above the door.
+        // Magma drags down toward the temple; soul sand pushes players up.
         repairWaterColumns();
         world.getPersistentDataContainer().set(LIFT, PersistentDataType.INTEGER, 1);
         plugin.getLogger().info("Undercity double lift at " + x + "," + y + "," + (z - 13)
