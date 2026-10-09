@@ -1,5 +1,5 @@
 name: Eaglervators
-version: '1.0.0'
+version: '1.0.1'
 main: org.pawling.eaglervators.EaglervatorsPlugin
 api-version: '1.21.11'
 author: Pawling CSD Game Development
