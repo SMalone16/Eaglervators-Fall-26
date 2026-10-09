@@ -90,3 +90,13 @@ Every water cell in both the stand-alone cliff shaft and the two Undercity shaft
 On server startup the plugin checks **every block from the base through the top water level**. If any height has flowing water, ordinary water, air, or the wrong bubble direction, it reconstructs just that shaft's water and bubbles. This repairs previously saved elevators without deleting the saved site, regenerating a cliff structure, or requiring a new Undercity.
 
 Restart the Paper server after the repository's GitHub Actions build updates `dist/Eaglervators-1.0.0.jar`; the server's session picker downloads that file when Eaglervators is selected, including the Undercity `u` preset. A `/reload` is not recommended for plugin JAR updates.
+
+## Undercity upper exit geometry (v1.0.1)
+
+The upper floor is `top`. Both bubble shafts terminate at **top**, leaving `top+1` (feet) and `top+2` (head) as air, with a glass roof at `top+3`. Players can exit through the south-facing oak doors without hitting a glass cap. Old elevators are automatically repaired on plugin startup: obstructing glass at `top+2` and excess water at `top+1` are removed without a world reset.
+
+Every submerged cell is filled with still **water level 0**, then native bubbles are placed with physics enabled. The magma shaft pulls downward and the soul-sand shaft pushes upward. A lightweight integrity check repeats every five seconds and repairs broken water columns while leaving healthy ones untouched.
+
+Use `/eaglervator status` as OP to see each column's actual server-side bubble count, ordinary source water, flowing water, invalid cells, base correctness, and whether the upper exit is clear. If server-side bubbles are all present but an old Eaglercraft browser client displays flowing water, consider client rendering/translation separately from the server-side column.
+
+For compatibility with the existing server picker, the distributable remains `dist/Eaglervators-1.0.0.jar` even though plugin metadata, startup logs, and Maven now report version **1.0.1**. Check GitHub Actions for a successful build and published dist JAR before starting the next session.
