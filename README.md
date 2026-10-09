@@ -82,3 +82,11 @@ The default search radius is 128 blocks. The detector starts from the required 2
 
 ## Optional Undercity city lift
 When EaglerCity and EaglerZombiesFall26 are both enabled, the plugin waits for the published world PDC Undercity location and builds a **two-column protected water/bubble elevator**. The soul-sand shaft rises into the city and the magma shaft descends into the cavern; the lower exit faces south toward the temple entrance. The structure is persisted with `eaglervators:undercity_lift` and is reconstructed only if its anchors disappear. Existing cliff lifts remain intact. With either dependency disabled, ordinary nearest-cliff scanning works unchanged. If the City does not publish a cavern within the startup grace window, cliff scanning resumes. The bubbles depend on the running server's water physics and should be verified with the legacy 1.12.2 browser client.
+
+## Still-water bubble columns and saved-world repairs
+
+Every water cell in both the stand-alone cliff shaft and the two Undercity shafts is explicitly placed as still **water level 0 (source water)**. Each cell is then converted to a real vanilla bubble-column block: soul sand pushes **up**, while magma pulls **down**. The running blocks therefore appear as `bubble_column[drag=false]` (up) or `bubble_column[drag=true]` (down), rather than ordinary `water[level=0]`; neither is falling/flowing water.
+
+On server startup the plugin checks **every block from the base through the top water level**. If any height has flowing water, ordinary water, air, or the wrong bubble direction, it reconstructs just that shaft's water and bubbles. This repairs previously saved elevators without deleting the saved site, regenerating a cliff structure, or requiring a new Undercity.
+
+Restart the Paper server after the repository's GitHub Actions build updates `dist/Eaglervators-1.0.0.jar`; the server's session picker downloads that file when Eaglervators is selected, including the Undercity `u` preset. A `/reload` is not recommended for plugin JAR updates.
